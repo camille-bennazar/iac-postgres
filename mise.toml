@@ -1,0 +1,23 @@
+min_version = "2026.10.9"
+
+[tool_config]
+locked = true
+
+[settings.pypi]
+uvx = true
+
+# Versions des outils utilisés par le Makefile.
+[tools]
+opentofu = "1.13.2"
+python = "3.14.8"
+uv = "0.13.5"
+ansible = "14.5.0"
+"conda:make" = { version = "4.4.1", channel = "conda-forge" }
+
+# Outils de contrôle (ansible-lint isolé de l'environnement Ansible).
+ruff = "0.17.1"
+shellcheck = "0.11.0"
+actionlint = "1.7.12"
+gitleaks = "8.30.1"
+trivy = "0.76.1"
+"pypi:ansible-lint" = "26.10.1"

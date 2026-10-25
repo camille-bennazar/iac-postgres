@@ -1,0 +1,15 @@
+# Une entrée crée une instance PostgreSQL distincte sur la VM partagée.
+# Remplacer chaque mot de passe d'exemple par un secret aléatoire distinct.
+# Les identifiants et les ports doivent être uniques dans cette liste.
+databases:
+  - id: app
+    name: app
+    user: app
+    password: "CHANGE_ME_USE_A_RANDOM_PASSWORD"
+    port: 5432
+
+  - id: analytics
+    name: analytics
+    user: analytics
+    password: "CHANGE_ME_USE_ANOTHER_RANDOM_PASSWORD"
+    port: 5433

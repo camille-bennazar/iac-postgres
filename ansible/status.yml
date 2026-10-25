@@ -1,0 +1,22 @@
+---
+- name: Afficher les conteneurs PostgreSQL et leur santé
+  hosts: postgres
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Lire les conteneurs, y compris les instances retirées du YAML
+      ansible.builtin.command:
+        argv:
+          - docker
+          - ps
+          - --all
+          - --filter
+          - label=com.docker.compose.service=postgres
+          - --format
+          - '{% raw %}table {{.Names}}\t{{.Status}}\t{{.Ports}}{% endraw %}'
+      register: containers
+      changed_when: false
+
+    - name: Afficher le statut
+      ansible.builtin.debug:
+        var: containers.stdout_lines

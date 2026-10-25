@@ -1,0 +1,5 @@
+# L'historique doit aussi détecter les archives ou caches commités par erreur.
+title = "iac-postgres : historique complet"
+
+[extend]
+useDefault = true

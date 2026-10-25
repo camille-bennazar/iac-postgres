@@ -1,0 +1,21 @@
+---
+- name: Lire la version du plugin Docker Compose
+  ansible.builtin.command:
+    argv: [docker, compose, version, --short]
+  register: docker_compose_version
+  changed_when: false
+
+- name: Lire les options de démarrage Compose
+  ansible.builtin.command:
+    argv: [docker, compose, up, --help]
+  register: docker_compose_up_help
+  changed_when: false
+
+- name: Vérifier la compatibilité de Docker Compose
+  ansible.builtin.assert:
+    that:
+      - docker_compose_version.stdout | trim | regex_replace('^v', '') is version('2.0.0', '>=')
+      - docker_compose_up_help.stdout is search('(?m)^ *--wait( |$)')
+      - docker_compose_up_help.stdout is search('(?m)^ *--wait-timeout( |$)')
+    fail_msg: "Docker Compose v2 ou supérieur avec --wait et --wait-timeout est requis ; vérifier les paquets Debian docker-cli et docker-compose."
+    quiet: true

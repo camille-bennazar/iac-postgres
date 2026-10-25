@@ -1,0 +1,15 @@
+title = "iac-postgres"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Configurations privées et fichiers générés ignorés par Git (scan local uniquement)"
+paths = [
+  '''(^|/)(tmp|\.reports|\.ansible|\.terraform|__pycache__|\.ruff_cache|\.cache)/''',
+  '''(^|/)(databases\.yml|inventory\.json|mise\.local\.toml|\.project\.lock)$''',
+  '''(^|/)[^/]+\.(tfvars|tfvars\.json|tfstate|tfstate\.[^/]+|tfplan|plan)$''',
+  '''(^|/)\.env$''',
+  '''(^|/)\.env\.(local|development|test|production)(\.local)?$''',
+  '''(^|/)crash(\.[^/]+)?\.log$''',
+]

@@ -1,0 +1,147 @@
+{
+  "reviewed_at": "2026-10-22",
+  "documentation": "docs/securite.md",
+  "reports": {
+    "trivy-provider.json": [
+      {
+        "id": "CVE-2026-111943",
+        "package": "stdlib",
+        "version": "v1.26.9"
+      }
+    ],
+    "trivy-tool-tofu.json": [
+      {
+        "id": "CVE-2026-78669",
+        "package": "golang.org/x/net",
+        "version": "v0.57.0"
+      }
+    ],
+    "trivy-tool-gitleaks.json": [
+      {
+        "id": "CVE-2026-56852",
+        "package": "golang.org/x/text",
+        "version": "v0.22.0"
+      },
+      {
+        "id": "CVE-2025-68121",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2025-61726",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-111943",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-25679",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-27145",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-32280",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-32281",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-32283",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-33811",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-33814",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-33818",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-39820",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-39821",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-42499",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-42504",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-56853",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-56858",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-56859",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-56860",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-56862",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-78667",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-78669",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      },
+      {
+        "id": "CVE-2026-97031",
+        "package": "stdlib",
+        "version": "v1.24.11"
+      }
+    ]
+  },
+  "artifacts": {
+    "trivy-provider.json": "572dbb140d6169585bff46f270929ce4f639ce8ff14182b99b9aed46f27837bf",
+    "trivy-tool-tofu.json": "949061cbb3c3d4558928ca9a459a5052b8c5e5545d17656f33316d2e3bc335f2",
+    "trivy-tool-gitleaks.json": "88f91962aa2f93ac6ab281d553b9e125f5197bbbce38f9f2437f7299c32e5509"
+  }
+}

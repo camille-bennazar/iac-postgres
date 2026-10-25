@@ -1,0 +1,19 @@
+---
+- name: Installer Docker et Compose depuis Debian
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - docker-cli
+      - docker-compose
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Activer Docker
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Vérifier Docker Compose avant le déploiement
+  ansible.builtin.import_tasks: check-docker.yml

@@ -1,0 +1,26 @@
+# Accès Proxmox
+proxmox_endpoint = "https://pve.example.net:8006/"
+# Préférer un certificat reconnu ou installer la CA Proxmox sur le PC.
+proxmox_insecure = false
+node_name        = "pve"
+
+# Stockages
+image_storage = "local"     # Autoriser le contenu « Import » dans Proxmox.
+disk_storage  = "local-lvm" # Adapter au stockage des disques : local-lvm, local-zfs, etc.
+
+# Identité et ressources de la VM
+vm_id     = 200
+vm_name   = "iac-postgres"
+cpu_cores = 2
+memory_mb = 4096
+disk_gb   = 40
+
+# Réseau
+bridge       = "vmbr0"
+ipv4_address = "REMPLACER_IPV4_VM/PREFIXE"
+ipv4_gateway = "REMPLACER_PASSERELLE"
+dns_servers  = ["REMPLACER_DNS"]
+
+# Accès SSH
+ssh_user       = "debian"
+ssh_public_key = "ssh-ed25519 REMPLACER_PAR_VOTRE_CLE_PUBLIQUE"

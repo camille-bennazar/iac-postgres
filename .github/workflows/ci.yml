@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Tests et qualité
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Vérifier les verrous avant installation
+        run: python3 scripts/dependencies.py
+      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+        with:
+          version: 2026.10.15
+          sha256: e3b186d4c70627f27037be615becaf4acfb30e41fb6a1819486717dc94e4e2a9
+          install_args: --locked
+          cache: false
+      - name: Vérifications complètes sans accès Proxmox
+        id: checks
+        shell: bash
+        run: |
+          mkdir -p .reports
+          set -o pipefail
+          make check 2>&1 | tee .reports/checks.log
+      - name: Bilan
+        if: always()
+        env:
+          CHECK_RESULT: ${{ steps.checks.outcome }}
+        run: |
+          printf '### Tests et qualité\n\nRésultat : %s\n\nDétails dans les journaux et artifacts.\n' "$CHECK_RESULT" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: quality-reports
+          path: .reports/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn

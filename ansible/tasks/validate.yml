@@ -1,0 +1,63 @@
+---
+# Aucun contenu de la configuration n'est recopié dans les diagnostics.
+
+- name: Valider les instances sans exposer leur contenu
+  ansible.builtin.set_fact:
+    database_validation_errors: >-
+      {%- set result = namespace(errors=[], ids=[], ports=[]) -%}
+      {%- if databases is not defined or databases is not sequence or databases is string or databases is mapping -%}
+        {%- set result.errors = ['databases doit être une liste YAML.'] -%}
+      {%- else -%}
+        {%- for entry in databases -%}
+          {%- set prefix = 'databases[' ~ loop.index0 ~ '] : ' -%}
+          {%- if entry is not mapping -%}
+            {%- set result.errors = result.errors + [prefix ~ 'une entrée doit être un objet YAML.'] -%}
+          {%- else -%}
+            {%- for field, limit in [('id', 31), ('name', 63), ('user', 63)] -%}
+              {%- set value = entry.get(field) -%}
+              {%- if value is not string or value is not match('^[a-z][a-z0-9_]{0,' ~ (limit - 1) ~ '}\Z') -%}
+                {%- set result.errors = result.errors + [prefix ~ field
+                  ~ ' doit commencer par une lettre minuscule, contenir seulement a-z, 0-9 ou _,'
+                  ~ ' et faire au plus ' ~ limit ~ ' caractères.'] -%}
+              {%- elif field == 'user' and value.startswith('pg_') -%}
+                {%- set result.errors = result.errors + [prefix ~ 'user ne doit pas commencer par pg_ (préfixe réservé par PostgreSQL).'] -%}
+              {%- elif field == 'id' -%}
+                {%- if value in result.ids -%}
+                  {%- set result.errors = result.errors + [prefix ~ 'id dupliqué.'] -%}
+                {%- endif -%}
+                {%- set result.ids = result.ids + [value] -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- set secret = entry.get('password') -%}
+            {%- if secret is not string -%}
+              {%- set result.errors = result.errors + [prefix ~ 'password doit être une chaîne YAML présente.'] -%}
+            {%- else -%}
+              {%- if secret | length < 20 -%}
+                {%- set result.errors = result.errors + [prefix ~ 'password doit contenir au moins 20 caractères.'] -%}
+              {%- endif -%}
+              {%- if secret is search('(?i)change.?me|remplacer|example|exemple|password|mot.?de.?passe') -%}
+                {%- set result.errors = result.errors + [prefix ~ 'password contient une valeur exemple interdite ; utiliser un secret aléatoire.'] -%}
+              {%- endif -%}
+              {%- if secret is search('[\r\n\x00]') -%}
+                {%- set result.errors = result.errors + [prefix ~ 'password ne doit contenir ni retour à la ligne ni caractère NUL.'] -%}
+              {%- endif -%}
+            {%- endif -%}
+            {%- set port = entry.get('port') -%}
+            {%- if port is not integer or port < 1024 or port > 65535 -%}
+              {%- set result.errors = result.errors + [prefix ~ 'port doit être un entier YAML entre 1024 et 65535 (sans guillemets).'] -%}
+            {%- else -%}
+              {%- if port in result.ports -%}
+                {%- set result.errors = result.errors + [prefix ~ 'port dupliqué.'] -%}
+              {%- endif -%}
+              {%- set result.ports = result.ports + [port] -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {{ result.errors }}
+  no_log: true
+
+- name: Signaler les champs invalides sans afficher leurs valeurs
+  ansible.builtin.fail:
+    msg: "{{ database_validation_errors | join('\n') }}"
+  when: database_validation_errors | length > 0

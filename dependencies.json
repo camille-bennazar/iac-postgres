@@ -1,0 +1,15 @@
+{
+  "debian": {
+    "build": "20261021-2638",
+    "filename": "debian-13-genericcloud-amd64-20261021-2638.qcow2",
+    "url": "https://cloud.debian.org/images/cloud/trixie/20261021-2638/debian-13-genericcloud-amd64-20261021-2638.qcow2",
+    "sha512": "16e0965312c56feb331049d45d2b1b5778f3f942a33d4300eedbb97527707f2bea87c0006f3e4cc7a25fadbff739c4e235a51fb9bcd1b66fd554f7f8e80ba45c"
+  },
+  "postgres": {
+    "image": "postgres:17.11-alpine3.24@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb"
+  },
+  "mise": {
+    "version": "2026.10.15",
+    "sha256_linux_x64": "e3b186d4c70627f27037be615becaf4acfb30e41fb6a1819486717dc94e4e2a9"
+  }
+}

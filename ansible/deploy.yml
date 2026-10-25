@@ -1,0 +1,54 @@
+---
+- name: Valider la configuration locale avant toute connexion
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_remote_tmp: "{{ playbook_dir }}/../.ansible/tmp"
+  vars_files:
+    - ../databases.yml
+  tasks:
+    - name: Protéger le fichier local des secrets
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/../databases.yml"
+        mode: '0600'
+
+    - name: Valider les instances
+      ansible.builtin.import_tasks: tasks/validate.yml
+
+- name: Installer Docker et déployer PostgreSQL
+  hosts: postgres
+  become: true
+  gather_facts: false
+  vars_files:
+    - ../dependencies.json
+    - ../databases.yml
+  pre_tasks:
+    - name: Attendre SSH et Python
+      ansible.builtin.wait_for_connection:
+        timeout: 600
+
+    - name: Attendre la fin de cloud-init
+      ansible.builtin.command: cloud-init status --wait
+      register: cloud_init
+      # cloud-init 23.4+ retourne 2 pour des erreurs récupérables.
+      failed_when: cloud_init.rc not in [0, 2]
+      changed_when: false
+  tasks:
+    - name: Installer et activer Docker
+      ansible.builtin.import_tasks: tasks/docker.yml
+
+    - name: Créer le répertoire des instances
+      ansible.builtin.file:
+        path: /opt/postgres
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Déployer chaque instance sans supprimer les autres
+      ansible.builtin.include_tasks: tasks/deploy-instance.yml
+      loop: "{{ databases }}"
+      loop_control:
+        label: "{{ item.id }}"
+      no_log: true

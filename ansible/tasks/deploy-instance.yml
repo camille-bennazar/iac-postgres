@@ -1,0 +1,55 @@
+---
+- name: Préparer et démarrer une instance
+  no_log: true
+  block:
+    - name: Créer le répertoire privé de l'instance
+      ansible.builtin.file:
+        path: "/opt/postgres/{{ item.id }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Écrire le secret PostgreSQL sans interpolation Compose
+      ansible.builtin.copy:
+        content: "{{ item.password }}"
+        dest: "/opt/postgres/{{ item.id }}/postgres_password"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Générer le projet Compose
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/compose.yml.j2"
+        dest: "/opt/postgres/{{ item.id }}/compose.yml"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Valider le projet Compose
+      ansible.builtin.command:
+        argv:
+          - docker
+          - compose
+          - -f
+          - compose.yml
+          - config
+          - --quiet
+        chdir: "/opt/postgres/{{ item.id }}"
+      changed_when: false
+
+    - name: Démarrer et attendre la santé de PostgreSQL
+      ansible.builtin.command:
+        argv:
+          - docker
+          - compose
+          - -f
+          - compose.yml
+          - up
+          - -d
+          - --wait
+          - --wait-timeout
+          - '180'
+        chdir: "/opt/postgres/{{ item.id }}"
+      register: compose_up
+      changed_when: "'Started' in compose_up.stderr or 'Created' in compose_up.stderr or 'Recreated' in compose_up.stderr"

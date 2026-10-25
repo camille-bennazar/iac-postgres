@@ -1,0 +1,66 @@
+---
+- name: Vérifier localement la configuration et le rendu Compose
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../dependencies.json
+  vars:
+    ansible_remote_tmp: "{{ playbook_dir }}/../.ansible/tmp"
+    ansible_host: 192.168.1.50
+    databases:
+      - id: app
+        name: app
+        user: app
+        password: 'S3cr3t$with"quotes:and\slashes!'
+        port: 5432
+  tasks:
+    - name: Vérifier les données de contrôle
+      ansible.builtin.import_tasks: tasks/validate.yml
+
+    - name: Détecter une configuration locale
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/../databases.yml"
+      register: local_config
+
+    - name: Charger et valider la configuration locale si présente
+      when: local_config.stat.exists
+      block:
+        - name: Charger les bases locales
+          ansible.builtin.include_vars:
+            file: ../databases.yml
+          no_log: true
+
+        - name: Valider les bases locales
+          ansible.builtin.include_tasks: tasks/validate.yml
+
+    - name: Détecter Compose local (facultatif)
+      ansible.builtin.command: docker compose version
+      register: local_compose
+      failed_when: false
+      changed_when: false
+
+    - name: Créer un répertoire temporaire privé
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: iac-postgres-check-
+      register: rendered
+
+    - name: Contrôler le modèle réellement utilisé par le déploiement
+      block:
+        - name: Vérifier le rendu de chaque instance
+          ansible.builtin.include_tasks: tasks/check-instance.yml
+          loop: "{{ databases }}"
+          loop_control:
+            label: "{{ item.id }}"
+          no_log: true
+
+        - name: Indiquer la limite du contrôle sans Docker local
+          ansible.builtin.debug:
+            msg: "Rendu YAML vérifié ; docker compose config non exécuté (Compose absent du PC)."
+          when: local_compose.rc != 0
+      always:
+        - name: Supprimer les fichiers temporaires
+          ansible.builtin.file:
+            path: "{{ rendered.path }}"
+            state: absent

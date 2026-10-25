@@ -1,0 +1,39 @@
+---
+- name: Vérifier le rendu sans exposer les secrets
+  no_log: true
+  block:
+    - name: Rendre le modèle Compose
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/templates/compose.yml.j2"
+        dest: "{{ rendered.path }}/compose.yml"
+        mode: '0600'
+
+    - name: Créer un secret de contrôle sans utiliser le vrai secret
+      ansible.builtin.copy:
+        content: 'local-check-only'
+        dest: "{{ rendered.path }}/postgres_password"
+        mode: '0600'
+
+    - name: Vérifier le contenu YAML du modèle
+      ansible.builtin.assert:
+        that:
+          - compose.services.postgres.image == postgres.image
+          - compose.services.postgres.ports == [ansible_host ~ ':' ~ item.port ~ ':5432']
+          - compose.volumes.data.name == 'pg_' ~ item.id ~ '_data'
+          - compose.networks.database.name == 'pg_' ~ item.id ~ '_network'
+          - compose.services.postgres.environment.POSTGRES_PASSWORD_FILE == '/run/secrets/postgres_password'
+      vars:
+        compose: "{{ lookup('file', rendered.path ~ '/compose.yml') | from_yaml }}"
+
+    - name: Vérifier avec le parseur Compose si disponible
+      ansible.builtin.command:
+        argv:
+          - docker
+          - compose
+          - -f
+          - compose.yml
+          - config
+          - --quiet
+        chdir: "{{ rendered.path }}"
+      when: local_compose.rc == 0
+      changed_when: false
