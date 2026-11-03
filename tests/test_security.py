@@ -70,7 +70,7 @@ class SecurityTests(unittest.TestCase):
             binary.write_bytes(b"changed fixture")
             self.assertEqual(security.accepted_risks("trivy-provider.json", root, policy), [])
 
-     def test_temporary_risk_expires_and_invalid_dates_fail_closed(self):
+    def test_temporary_risk_expires_and_invalid_dates_fail_closed(self):
         """Une acceptation expirée ou mal datée ne peut pas rendre un scan vert."""
         import hashlib
 

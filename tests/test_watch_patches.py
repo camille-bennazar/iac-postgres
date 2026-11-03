@@ -35,7 +35,7 @@ def archive_bytes(name="gitleaks", kind=tarfile.REGTYPE):
 
 
 class WatchTests(unittest.TestCase):
-     def test_trivy_corrective_release_is_verified_and_rescanned(self):
+    def test_trivy_corrective_release_is_verified_and_rescanned(self):
         """La veille suit le correctif go-jose embarqué par Trivy."""
         import hashlib
 
