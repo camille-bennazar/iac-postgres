@@ -89,7 +89,7 @@ d'une instance et la connexion à une base.
 ## Commandes pratiques et contrôles
 
 ```sh
-source scripts/auth.sh   # Terminal Bash : saisir le token Proxmox sans bloc à copier
+source scripts/auth.sh  # Terminal Bash : saisir le token Proxmox sans bloc à copier
 make check              # Validations, tests et lint
 make security           # Gitleaks et Trivy, mode local strict
 make clear              # Archiver les fichiers générés et le state dans ./tmp/
