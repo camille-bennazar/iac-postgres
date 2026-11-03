@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,6 +25,8 @@ AUDITED_TOOL_BINARIES = {
 
 def accepted_risks(report: str, target: Path, policy: dict) -> list[dict]:
     entries = policy.get("reports", {}).get(report, [])
+    entries = [entry for entry in entries
+               if "expires_at" not in entry or date.fromisoformat(entry["expires_at"]) > date.today()]
     if not entries:
         return []
     if target.is_dir():

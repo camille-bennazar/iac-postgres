@@ -12,11 +12,13 @@ du paquet et de sa version.
 Cette acceptation est une décision de maintien du pipeline pour le périmètre
 homelab décrit ici ; elle ne constitue pas une preuve de non-applicabilité.
 
-Les 26 détections connues, dont une CRITICAL, restent visibles dans les rapports,
+Les 28 détections connues, dont une CRITICAL, restent visibles dans les rapports,
 le résumé GitHub et les avertissements CI. Elles ne sont pas ajoutées au fichier
 d'exclusions Trivy. Une nouvelle alerte, un secret, une configuration IaC HIGH/CRITICAL,
 un outil absent ou un scan incomplet reste bloquant. Une version exacte et son
 empreinte garantissent l'artefact attendu, pas l'absence de vulnérabilités.
+Une entrée portant `expires_at` cesse d'être acceptée dès cette date (date du
+runner). Une date invalide fait échouer le contrôle.
 
 Les exceptions concernent uniquement des alertes démontrées non applicables au
 binaire examiné. Elles ont un identifiant CVE, un chemin, un paquet,
@@ -50,21 +52,24 @@ APT de la VM réellement déployée, ni tous les composants non reconnus par Tri
 
 ## Alertes actives
 
-Analyse du **22 octobre 2026**, après examen des distributions officielles,
-des avis amont, des sources des versions épinglées et des exécutables Linux amd64.
+Analyse initiale du **22 octobre 2026**, complétée par les scans GitHub Actions
+et la revue de go-jose du **3 novembre 2026**. Elle porte sur les distributions
+officielles, les avis amont, les sources épinglées et les exécutables Linux amd64.
+
 Le registre couvre chaque couple CVE/composant signalé : une même CVE peut être
 non applicable à un outil et rester un risque actif accepté en CI dans un autre.
 
 | Composant | HIGH actives | CRITICAL actives | Non applicables exclues |
 | --- | --- | --- | --- |
 | Provider Proxmox | 1 | 0 | 0 |
-| OpenTofu | 1 | 0 | 3 |
+| OpenTofu | 2 | 0 | 3 |
 | actionlint | 0 | 0 | 24 |
 | Gitleaks | 23 | 1 | 15 |
 | PostgreSQL / gosu | 0 | 0 | 26 |
-| Python et Trivy | 0 | 0 | 0 |
+| Trivy | 1 | 0 | 0 |
+| Python | 0 | 0 | 0 |
 
-**25 HIGH et 1 CRITICAL restent actives**, pour 24 CVE distinctes. Elles sont
+**27 HIGH et 1 CRITICAL restent actives**, pour 25 CVE distinctes. Elles sont
 acceptées en CI pour les versions et artefacts explicitement recensés ; le contrôle
 local strict continue d’échouer.
 Les 68 détections exclues ont une portée documentée ; elles ne sont pas des
@@ -83,6 +88,7 @@ les autres codes renvoient aux [preuves des exceptions](#exceptions-outils).
 | [CVE-2026-56864](https://pkg.go.dev/vuln/GO-2026-6180) | OpenTofu | Non applicable | 0.40.0 | T-SUMDB |
 | [CVE-2026-56865](https://pkg.go.dev/vuln/GO-2026-6179) | OpenTofu | Non applicable | 0.40.0 | T-SUMDB |
 | [CVE-2026-78669](https://pkg.go.dev/vuln/GO-2026-6611) | OpenTofu | Incertaine — acceptée en CI | 0.60.0 | RÉSEAU |
+| [CVE-2026-116587](https://github.com/go-jose/go-jose/security/advisories/GHSA-mgcc-cww5-fp2q) | OpenTofu et Trivy | Incertaine — acceptée en CI jusqu'au 17 novembre 2026 exclu | go-jose/v4 4.1.6 | JWK |
 | [CVE-2026-84445](https://pkg.go.dev/vuln/GO-2026-6443) | OpenTofu | Non applicable | 1.82.2, 1.83.2, 1.84.0-dev.0.20260825144003-d5a41119e0e3, 1.85.0-dev.0.20260825072537-93e31b48545e | T-XDS |
 | [CVE-2026-111943](https://pkg.go.dev/vuln/GO-2026-6809) | actionlint | Non applicable | 1.26.10, 1.27.3 | A-IMPORT |
 | [CVE-2026-27145](https://pkg.go.dev/vuln/GO-2026-5037) | actionlint | Non applicable | 1.25.11, 1.26.4 | A-IMPORT |
@@ -163,10 +169,39 @@ accessibilité ; en l'absence de preuve contraire, l'alerte reste active.
 | GRPC | Arrêt d'un serveur gRPC par requête malformée. Vérifier la création d'un serveur xDS et son accessibilité dans les échanges locaux OpenTofu/provider avant de conclure à une exposition. |
 | FICHIERS | Traversée de répertoires via les API `os.Root`. Vérifier les symboles et appels concernés, la plateforme et l'influence possible sur les liens symboliques. |
 | PARSEUR | Déni de service ou, pour les templates HTML, sortie incorrectement échappée. Vérifier le parseur, la fonction et le contenu contrôlé par un tiers ; la présence d'une bibliothèque ne prouve pas que cet usage est exposé. |
+| JWK | Consommation excessive de CPU pendant la validation des paramètres RSA d'une clé JWK non fiable. L'avis amont concerne notamment le décodage des clés privées ; l'absence d'exposition de tous les chemins indirects n'est pas démontrée. |
 
 Les limites de durée des jobs CI réduisent certains blocages, mais ne corrigent
 pas ces vulnérabilités. Les scans de contributions externes n'utilisent aucun
 secret Proxmox et le token GitHub n'a qu'un accès en lecture au contenu.
+
+
+### Acceptation temporaire de go-jose
+
+Le 3 novembre 2026, les dernières releases stables officielles restent
+[OpenTofu 1.13.2](https://github.com/opentofu/opentofu/releases/tag/v1.13.2) et
+[Trivy 0.76.1](https://github.com/aquasecurity/trivy/releases/tag/v0.76.1).
+Elles embarquent respectivement go-jose/v4 **4.1.4** et **4.1.5**, affectés par
+[CVE-2026-116587](https://github.com/go-jose/go-jose/security/advisories/GHSA-mgcc-cww5-fp2q).
+La bibliothèque est corrigée en **4.1.6** ; aucun binaire stable corrigé de ces
+deux outils n'est disponible à la date de revue.
+
+Pour le périmètre homelab, ces deux détections rejoignent temporairement le
+registre des risques acceptés en CI, avec expiration le **17 novembre 2026** :
+
+| Rapport | Version du paquet | SHA-256 de l'exécutable officiel Linux amd64 |
+| --- | --- | --- |
+| `trivy-tool-tofu.json` | `v4.1.4` | `949061cbb3c3d4558928ca9a459a5052b8c5e5545d17656f33316d2e3bc335f2` |
+| `trivy-tool-trivy.json` | `v4.1.5` | `d1dfca6ae10a1ad4540bb94e64f0510077c47008920a9b554986b39dca573d83` |
+
+Cette décision remet la CI en service avec un risque documenté ; elle ne corrige
+pas les binaires et ne constitue pas une preuve de non-applicabilité. L'alerte
+reste dans les rapports et avertissements GitHub. `make security` sans
+`--allow-known` reste bloquant. Toute autre CVE, version ou empreinte reste
+bloquante, de même que ces deux détections à l'expiration de l'acceptation.
+Limiter les entrées JWK et les destinations réseau à des sources de confiance,
+conserver les délais maximaux des jobs et revoir ces entrées dès qu'une release
+corrigée est publiée. La veille couvre désormais aussi les correctifs de Trivy.
 
 ## Exceptions gosu
 
@@ -339,8 +374,8 @@ décrit la mise à jour des versions et empreintes.
 ## Surveillance des correctifs
 
 La [veille quotidienne](verification.md#notifications-discord-des-correctifs)
-recherche des releases stables officielles du provider Proxmox, d'OpenTofu et de
-Gitleaks, qui portent les risques actuellement acceptés. Elle vérifie le SHA-256
+recherche des releases stables officielles du provider Proxmox, d'OpenTofu, de
+Gitleaks et de Trivy, qui portent les risques actuellement acceptés. Elle vérifie le SHA-256
 publié par GitHub, extrait seulement le binaire Linux amd64 sans l'exécuter et
 le rescanne sans exclusions à toutes les sévérités. Une baisse de gravité seule
 ne suffit pas à annoncer un correctif. Une notification indique les CVE suivies qui ne sont

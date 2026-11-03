@@ -70,6 +70,26 @@ class SecurityTests(unittest.TestCase):
             binary.write_bytes(b"changed fixture")
             self.assertEqual(security.accepted_risks("trivy-provider.json", root, policy), [])
 
+     def test_temporary_risk_expires_and_invalid_dates_fail_closed(self):
+        """Une acceptation expirée ou mal datée ne peut pas rendre un scan vert."""
+        import hashlib
+
+        with tempfile.TemporaryDirectory() as temporary:
+            binary = Path(temporary) / "trivy"
+            binary.write_bytes(b"audited fixture")
+            entry = {"id": "CVE-2026-116587", "package": "github.com/go-jose/go-jose/v4",
+                     "version": "v4.1.5"}
+            policy = {"reports": {"trivy-tool-trivy.json": [entry]},
+                      "artifacts": {"trivy-tool-trivy.json": hashlib.sha256(binary.read_bytes()).hexdigest()}}
+            for days in (-1, 0, 1):
+                with self.subTest(days=days):
+                    entry["expires_at"] = (date.today() + timedelta(days=days)).isoformat()
+                    self.assertEqual(security.accepted_risks("trivy-tool-trivy.json", binary, policy),
+                                     [entry] if days > 0 else [])
+            entry["expires_at"] = "invalid"
+            with self.assertRaises(ValueError):
+                security.accepted_risks("trivy-tool-trivy.json", binary, policy)
+
     def test_ci_allows_only_documented_risks_and_keeps_other_failures_blocking(self):
         """Le mode CI tolère une alerte connue, mais bloque une nouvelle alerte, un secret ou une erreur."""
         for scenario in ("known", "strict", "new", "secret", "scanner-error"):

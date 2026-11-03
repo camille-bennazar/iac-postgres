@@ -1,5 +1,5 @@
 {
-  "reviewed_at": "2026-10-22",
+  "reviewed_at": "2026-11-03",
   "documentation": "docs/securite.md",
   "reports": {
     "trivy-provider.json": [
@@ -11,9 +11,23 @@
     ],
     "trivy-tool-tofu.json": [
       {
+        "id": "CVE-2026-116587",
+        "package": "github.com/go-jose/go-jose/v4",
+        "version": "v4.1.4",
+        "expires_at": "2026-11-17"
+      },
+      {
         "id": "CVE-2026-78669",
         "package": "golang.org/x/net",
         "version": "v0.57.0"
+      }
+    ],
+    "trivy-tool-trivy.json": [
+      {
+        "id": "CVE-2026-116587",
+        "package": "github.com/go-jose/go-jose/v4",
+        "version": "v4.1.5",
+        "expires_at": "2026-11-17"
       }
     ],
     "trivy-tool-gitleaks.json": [
@@ -140,6 +154,7 @@
     ]
   },
   "artifacts": {
+    "trivy-tool-trivy.json": "d1dfca6ae10a1ad4540bb94e64f0510077c47008920a9b554986b39dca573d83",
     "trivy-provider.json": "572dbb140d6169585bff46f270929ce4f639ce8ff14182b99b9aed46f27837bf",
     "trivy-tool-tofu.json": "949061cbb3c3d4558928ca9a459a5052b8c5e5545d17656f33316d2e3bc335f2",
     "trivy-tool-gitleaks.json": "88f91962aa2f93ac6ab281d553b9e125f5197bbbce38f9f2437f7299c32e5509"

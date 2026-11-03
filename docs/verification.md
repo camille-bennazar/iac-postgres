@@ -105,6 +105,9 @@ bloquantes (`blocking`). Les risques acceptés restent dans les vulnérabilités
 rapport Trivy et génèrent des avertissements CI. Un secret, une configuration IaC
 HIGH/CRITICAL ou une erreur de scan reste bloquant ; aucun `continue-on-error`
 global ni exclusion automatique des alertes sans correctif n'est utilisé.
+Les acceptations temporaires portant `expires_at` expirent dès la date indiquée ;
+une date invalide fait échouer le scan. Les deux acceptations go-jose prennent
+fin le 17 novembre 2026 ; voir le [registre de sécurité](securite.md#acceptation-temporaire-de-go-jose).
 Un binaire d'outil absent fait échouer le contrôle. Les anciens rapports sont
 supprimés avant chaque scan pour éviter de présenter un résultat périmé.
 
@@ -199,7 +202,7 @@ La veille `python3 scripts/watch_patches.py check` :
 
 1. Lit les rapports fraîchement produits et recherche les nouvelles releases
    stables du provider Proxmox et d’OpenTofu, même sans CVE active dans leurs
-   versions épinglées. Gitleaks reste suivi pour les correctifs des CVE actives.
+   versions épinglées. Gitleaks et Trivy restent suivis pour les correctifs des CVE actives.
 2. Consulte la release marquée stable la plus récente via l’API GitHub
    `releases/latest`, puis vérifie son tag sémantique et refuse explicitement les
    brouillons et préversions. Une version déjà épinglée n’est pas

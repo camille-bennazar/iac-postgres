@@ -24,6 +24,7 @@ TARGETS = {
     "provider": ("bpg/terraform-provider-proxmox", "terraform-provider-proxmox_{version}_linux_amd64.zip", "trivy-provider.json"),
     "tofu": ("opentofu/opentofu", "tofu_{version}_linux_amd64.tar.gz", "trivy-tool-tofu.json"),
     "gitleaks": ("gitleaks/gitleaks", "gitleaks_{version}_linux_x64.tar.gz", "trivy-tool-gitleaks.json"),
+    "trivy": ("aquasecurity/trivy", "trivy_{version}_Linux-64bit.tar.gz", "trivy-tool-trivy.json"),
 }
 RELEASE_TARGETS = frozenset({"provider", "tofu"})
 MAX_ARCHIVE = 256 * 1024 * 1024
@@ -135,7 +136,7 @@ def check() -> None:
     reports = ROOT / ".reports"
     config = tomllib.loads((ROOT / "mise.toml").read_text())
     provider = re.search(r'\bversion\s*=\s*"(\d+\.\d+\.\d+)"', (ROOT / "terraform/.terraform.lock.hcl").read_text())[1]
-    versions = {"provider": provider, "tofu": config["tools"]["opentofu"], "gitleaks": config["tools"]["gitleaks"]}
+    versions = {"provider": provider, "tofu": config["tools"]["opentofu"],"gitleaks": config["tools"]["gitleaks"], "trivy": config["tools"]["trivy"]}
     candidates, errors = [], []
     for component, (_, _, name) in TARGETS.items():
         try:

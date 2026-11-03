@@ -35,6 +35,31 @@ def archive_bytes(name="gitleaks", kind=tarfile.REGTYPE):
 
 
 class WatchTests(unittest.TestCase):
+     def test_trivy_corrective_release_is_verified_and_rescanned(self):
+        """La veille suit le correctif go-jose embarqué par Trivy."""
+        import hashlib
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            baseline = root / "trivy-tool-trivy.json"
+            report(baseline, ["CVE-2026-116587"])
+            data = archive_bytes("trivy")
+            asset = {"name": "trivy_0.76.2_Linux-64bit.tar.gz",
+                     "digest": "sha256:" + hashlib.sha256(data).hexdigest(),
+                     "browser_download_url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.2/trivy_0.76.2_Linux-64bit.tar.gz"}
+
+            def scan(command, **kwargs):
+                self.assertEqual(Path(command[-1]).name, "trivy")
+                report(Path(command[command.index("--output") + 1]), [])
+                return subprocess.CompletedProcess([], 0)
+
+            with patch.object(watch, "latest_stable", return_value={"tag_name": "v0.76.2", "assets": [asset]}), \
+                 patch.object(watch, "download", return_value=data), \
+                 patch.object(watch.subprocess, "run", side_effect=scan):
+                candidate = watch.check_candidate("trivy", "0.76.1", baseline, root)
+            self.assertEqual(candidate["fixed_cves"], ["CVE-2026-116587"])
+            self.assertEqual(candidate["remaining_cves"], 0)
+
     def test_download_redirects_never_forward_the_github_token(self):
         request = watch.urllib.request.Request("https://api.github.com/example", headers={"Authorization": "Bearer fixture"})
         handler = watch.PublicRedirect()
